@@ -1,0 +1,6 @@
+{
+  "name": "Simulador Examen Teórico Licencia Clase B Chile",
+  "description": "Simulador oficial interactivo del examen teórico de conducir Clase B de CONASET Chile con la base completa de 280 preguntas oficiales con imágenes, simulacro de 35 preguntas cronometradas, preguntas críticas de doble puntaje y explorador de estudio.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
