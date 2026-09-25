@@ -9,9 +9,10 @@
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
+    "build:clean": "rm -rf dist && tsc && vite build",
+    "clean:build": "rm -rf dist && tsc && vite build",
     "clean": "rm -rf dist .vite",
-    "clean:build": "rm -rf dist .vite && tsc --noEmit && vite build",
+    "preview": "vite preview",
     "lint": "tsc --noEmit",
     "type-check": "tsc --noEmit"
   },
