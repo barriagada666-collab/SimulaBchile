@@ -13,6 +13,7 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
+        'react-is': path.resolve(__dirname, './src/shims/react-is.ts'),
       },
     },
     build: {
@@ -21,13 +22,13 @@ export default defineConfig(() => {
       sourcemap: false,
       chunkSizeWarningLimit: 1500,
       rollupOptions: {
-        external: ['react-is'],
         output: {
           manualChunks(id) {
             if (
               id.includes('node_modules/react') ||
               id.includes('node_modules/react-dom') ||
-              id.includes('node_modules/react-is')
+              id.includes('node_modules/react-is') ||
+              id.includes('src/shims/react-is')
             ) {
               return 'vendor-react';
             }
