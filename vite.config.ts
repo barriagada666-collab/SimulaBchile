@@ -20,22 +20,25 @@ export default defineConfig(() => {
       outDir: 'dist',
       assetsDir: 'assets',
       sourcemap: false,
-      chunkSizeWarningLimit: 1500,
+      chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
+          chunkFileNames: 'assets/[name]-[hash].js',
+          entryFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash].[ext]',
           manualChunks(id) {
             if (
-              id.includes('node_modules/react') ||
-              id.includes('node_modules/react-dom') ||
-              id.includes('node_modules/react-is') ||
+              id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/react-is/') ||
               id.includes('src/shims/react-is')
             ) {
               return 'vendor-react';
             }
-            if (id.includes('node_modules/lucide-react')) {
+            if (id.includes('node_modules/lucide-react/')) {
               return 'vendor-icons';
             }
-            if (id.includes('node_modules/recharts')) {
+            if (id.includes('node_modules/recharts/')) {
               return 'vendor-charts';
             }
           },

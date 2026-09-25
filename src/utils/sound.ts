@@ -28,6 +28,15 @@ export function playSound(type: 'correct' | 'wrong' | 'click' | 'finish', muted 
     osc.connect(gain);
     gain.connect(ctx.destination);
 
+    osc.onended = () => {
+      try {
+        osc.disconnect();
+        gain.disconnect();
+      } catch {
+        // ignore
+      }
+    };
+
     if (type === 'correct') {
       osc.type = 'sine';
       osc.frequency.setValueAtTime(523.25, now); // C5

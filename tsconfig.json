@@ -18,7 +18,10 @@
     "jsx": "react-jsx",
     "paths": {
       "@/*": [
-        "./*"
+        "./src/*"
+      ],
+      "react-is": [
+        "./src/shims/react-is.ts"
       ]
     },
     "allowImportingTsExtensions": true,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { 
   Car, Clock, AlertTriangle, ShieldAlert, Award, 
   ChevronRight, ChevronLeft, RotateCcw, Volume2, VolumeX,
@@ -10,10 +10,23 @@ import { Question, UserAnswer, SimulatorMode, QuestionCategory } from './types/q
 import { QUESTION_BANK, generateConasetExam, shuffleArray } from './data/questions';
 import { QuestionCard } from './components/QuestionCard';
 import { QuestionNavigator } from './components/QuestionNavigator';
-import { ExamResults } from './components/ExamResults';
 import { LegalInstructionsModal } from './components/LegalInstructionsModal';
-import { QuestionBankExplorer } from './components/QuestionBankExplorer';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { playSound } from './utils/sound';
+
+const ExamResults = lazy(() =>
+  import('./components/ExamResults').then((m) => ({ default: m.ExamResults }))
+);
+const QuestionBankExplorer = lazy(() =>
+  import('./components/QuestionBankExplorer').then((m) => ({ default: m.QuestionBankExplorer }))
+);
+
+const ComponentLoadingFallback = () => (
+  <div className="w-full max-w-4xl mx-auto py-20 flex flex-col items-center justify-center space-y-4 animate-fade-in">
+    <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+    <p className="text-sm font-semibold text-slate-500">Cargando módulo de examen...</p>
+  </div>
+);
 
 const TEST_DURATION_SECONDS = 45 * 60; // 45 minutos oficiales
 
@@ -231,7 +244,8 @@ export default function App() {
   }, [userAnswers]);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       {/* Navbar Superior Oficial */}
       <header className="bg-slate-900 text-white border-b-2 border-blue-600 sticky top-0 z-40 shadow-md">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
@@ -544,7 +558,9 @@ export default function App() {
         {/* PANTALLA: EXPLORADOR DEL BANCO DE 280 PREGUNTAS */}
         {/* ============================================================== */}
         {appState === 'explorer' && (
-          <QuestionBankExplorer onBackToHome={() => setAppState('welcome')} />
+          <Suspense fallback={<ComponentLoadingFallback />}>
+            <QuestionBankExplorer onBackToHome={() => setAppState('welcome')} />
+          </Suspense>
         )}
 
         {/* ============================================================== */}
@@ -745,14 +761,16 @@ export default function App() {
         {/* PANTALLA 4: RESULTADOS DETALLADOS DEL EXAMEN */}
         {/* ============================================================== */}
         {appState === 'results' && (
-          <ExamResults
-            questions={questions}
-            userAnswers={userAnswers}
-            timeSpentSeconds={TEST_DURATION_SECONDS - timeRemaining}
-            examSessionId={examSessionId}
-            onRestart={handleStartExam}
-            onGoHome={() => setAppState('welcome')}
-          />
+          <Suspense fallback={<ComponentLoadingFallback />}>
+            <ExamResults
+              questions={questions}
+              userAnswers={userAnswers}
+              timeSpentSeconds={TEST_DURATION_SECONDS - timeRemaining}
+              examSessionId={examSessionId}
+              onRestart={handleStartExam}
+              onGoHome={() => setAppState('welcome')}
+            />
+          </Suspense>
         )}
       </main>
 
@@ -812,5 +830,6 @@ export default function App() {
         </div>
       </footer>
     </div>
+    </ErrorBoundary>
   );
 }
