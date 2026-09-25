@@ -26,6 +26,7 @@ export default function App() {
   const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
   const [isSubmitConfirmOpen, setIsSubmitConfirmOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [examSessionId, setExamSessionId] = useState<string>(() => 'exam-' + Date.now());
 
   // Estados específicos para Modo Práctica
   const [practiceCategory, setPracticeCategory] = useState<string>('all');
@@ -55,6 +56,7 @@ export default function App() {
   // Iniciar Examen Oficial
   const handleStartExam = () => {
     const examQuestions = generateConasetExam();
+    setExamSessionId('exam-' + Date.now());
     setQuestions(examQuestions);
     setUserAnswers({});
     setCurrentIndex(0);
@@ -747,6 +749,7 @@ export default function App() {
             questions={questions}
             userAnswers={userAnswers}
             timeSpentSeconds={TEST_DURATION_SECONDS - timeRemaining}
+            examSessionId={examSessionId}
             onRestart={handleStartExam}
             onGoHome={() => setAppState('welcome')}
           />

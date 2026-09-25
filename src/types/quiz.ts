@@ -49,3 +49,17 @@ export interface ExamSummary {
   incorrectAnswersCount: number;
   categoryBreakdown: Record<QuestionCategory, { correct: number; total: number; points: number }>;
 }
+
+export interface TestHistoryItem {
+  id: string;
+  attemptNumber: number;
+  points: number;
+  percentage: number;
+  correctAnswers: number;
+  criticalCorrect: number;
+  totalQuestions: number;
+  isApproved: boolean;
+  date: string;
+  timeSpentSeconds: number;
+}
+

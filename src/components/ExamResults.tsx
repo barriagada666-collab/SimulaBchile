@@ -1,16 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   CheckCircle2, XCircle, RotateCcw, Award, AlertTriangle, 
   Clock, ShieldAlert, BookOpen, ChevronDown, ChevronUp, ArrowRight,
-  Filter, Check, X
+  Filter, Check, X, TrendingUp, Sparkles, History, Trash2,
+  Target, BarChart3
 } from 'lucide-react';
-import { Question, UserAnswer, QuestionCategory } from '../types/quiz';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ReferenceLine,
+} from 'recharts';
+import { Question, UserAnswer, QuestionCategory, TestHistoryItem } from '../types/quiz';
 import { TrafficIllustration } from './TrafficIllustration';
+
+const STORAGE_KEY_HISTORY = 'conaset_exam_history';
 
 interface ExamResultsProps {
   questions: Question[];
   userAnswers: Record<number, UserAnswer>;
   timeSpentSeconds: number;
+  examSessionId?: string;
   onRestart: () => void;
   onGoHome: () => void;
 }
@@ -27,15 +41,24 @@ const CATEGORY_NAMES: Record<QuestionCategory, string> = {
   accidentes: 'Siniestros y Primeros Auxilios',
 };
 
+type MetricType = 'points' | 'percentage' | 'correctAnswers';
+
 export const ExamResults: React.FC<ExamResultsProps> = ({
   questions,
   userAnswers,
   timeSpentSeconds,
+  examSessionId,
   onRestart,
   onGoHome,
 }) => {
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<'all' | 'mistakes' | 'critical'>('all');
   const [expandedQuestionId, setExpandedQuestionId] = useState<number | null>(null);
+  const [activeMetric, setActiveMetric] = useState<MetricType>('points');
+  const [showDemoTrend, setShowDemoTrend] = useState<boolean>(false);
+  const [history, setHistory] = useState<TestHistoryItem[]>([]);
+  const [showConfirmClear, setShowConfirmClear] = useState<boolean>(false);
+
+  const currentExamId = useMemo(() => examSessionId || `exam-${Date.now()}`, [examSessionId]);
 
   // Calcular puntajes oficiales CONASET
   let totalScore = 0;
@@ -45,7 +68,6 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
   let criticalScoreEarned = 0;
 
   const mistakes: { question: Question; userAnswer: UserAnswer }[] = [];
-
   const categoryStats: Record<string, { total: number; correct: number; points: number; maxPoints: number }> = {};
 
   questions.forEach((q) => {
@@ -96,6 +118,306 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m}m ${s < 10 ? '0' : ''}${s}s`;
+  };
+
+  // Registrar y cargar historial en localStorage
+  useEffect(() => {
+    let savedHistory: TestHistoryItem[] = [];
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_HISTORY);
+      if (raw) {
+        savedHistory = JSON.parse(raw);
+      }
+    } catch {
+      savedHistory = [];
+    }
+
+    const currentAttempt: TestHistoryItem = {
+      id: currentExamId,
+      attemptNumber: savedHistory.length + 1,
+      points: totalScore,
+      percentage,
+      correctAnswers: correctCount,
+      criticalCorrect,
+      totalQuestions: questions.length,
+      isApproved,
+      date: new Date().toLocaleDateString('es-CL', {
+        day: '2-digit',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      timeSpentSeconds,
+    };
+
+    const existingIndex = savedHistory.findIndex((item) => item.id === currentExamId);
+    let updatedHistory: TestHistoryItem[];
+    if (existingIndex >= 0) {
+      updatedHistory = [...savedHistory];
+      updatedHistory[existingIndex] = {
+        ...currentAttempt,
+        attemptNumber: existingIndex + 1,
+      };
+    } else {
+      updatedHistory = [...savedHistory, currentAttempt];
+    }
+
+    // Re-index attempt numbers
+    updatedHistory = updatedHistory.map((item, idx) => ({
+      ...item,
+      attemptNumber: idx + 1,
+    }));
+
+    try {
+      localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(updatedHistory));
+    } catch {
+      // ignore localstorage quota errors
+    }
+    setHistory(updatedHistory);
+  }, [currentExamId, totalScore, percentage, correctCount, criticalCorrect, questions.length, isApproved, timeSpentSeconds]);
+
+  // Limpiar historial
+  const handleClearHistory = () => {
+    try {
+      const currentAttemptOnly: TestHistoryItem = {
+        id: currentExamId,
+        attemptNumber: 1,
+        points: totalScore,
+        percentage,
+        correctAnswers: correctCount,
+        criticalCorrect,
+        totalQuestions: questions.length,
+        isApproved,
+        date: new Date().toLocaleDateString('es-CL', {
+          day: '2-digit',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        timeSpentSeconds,
+      };
+      localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify([currentAttemptOnly]));
+      setHistory([currentAttemptOnly]);
+      setShowConfirmClear(false);
+      setShowDemoTrend(false);
+    } catch {
+      // ignore
+    }
+  };
+
+  // Datos para el gráfico (Reales o Simulación Demo)
+  const chartData = useMemo(() => {
+    if (showDemoTrend) {
+      // 5 rondas simulando curva de aprendizaje con el intento actual como último
+      return [
+        {
+          id: 'demo-1',
+          attemptNumber: 1,
+          points: 24,
+          percentage: 63,
+          correctAnswers: 22,
+          criticalCorrect: 1,
+          totalQuestions: 35,
+          isApproved: false,
+          date: 'Ensayo #1',
+          timeSpentSeconds: 2400,
+          displayLabel: 'Ronda 1',
+        },
+        {
+          id: 'demo-2',
+          attemptNumber: 2,
+          points: 28,
+          percentage: 74,
+          correctAnswers: 26,
+          criticalCorrect: 2,
+          totalQuestions: 35,
+          isApproved: false,
+          date: 'Ensayo #2',
+          timeSpentSeconds: 2150,
+          displayLabel: 'Ronda 2',
+        },
+        {
+          id: 'demo-3',
+          attemptNumber: 3,
+          points: 31,
+          percentage: 82,
+          correctAnswers: 29,
+          criticalCorrect: 2,
+          totalQuestions: 35,
+          isApproved: false,
+          date: 'Ensayo #3',
+          timeSpentSeconds: 1980,
+          displayLabel: 'Ronda 3',
+        },
+        {
+          id: 'demo-4',
+          attemptNumber: 4,
+          points: 34,
+          percentage: 89,
+          correctAnswers: 31,
+          criticalCorrect: 3,
+          totalQuestions: 35,
+          isApproved: true,
+          date: 'Ensayo #4',
+          timeSpentSeconds: 1840,
+          displayLabel: 'Ronda 4',
+        },
+        {
+          id: currentExamId,
+          attemptNumber: 5,
+          points: totalScore,
+          percentage,
+          correctAnswers: correctCount,
+          criticalCorrect,
+          totalQuestions: questions.length,
+          isApproved,
+          date: 'Este Intento',
+          timeSpentSeconds,
+          displayLabel: 'Actual (Tú)',
+        },
+      ];
+    }
+
+    return history.map((item) => ({
+      ...item,
+      displayLabel: `Test #${item.attemptNumber}`,
+    }));
+  }, [showDemoTrend, history, currentExamId, totalScore, percentage, correctCount, criticalCorrect, questions.length, isApproved, timeSpentSeconds]);
+
+  // Métricas agregadas
+  const aggregateStats = useMemo(() => {
+    const list = chartData;
+    if (list.length === 0) {
+      return { avgPoints: totalScore, bestPoints: totalScore, passRate: isApproved ? 100 : 0, delta: 0 };
+    }
+    const sumPoints = list.reduce((acc, curr) => acc + curr.points, 0);
+    const avgPoints = Math.round((sumPoints / list.length) * 10) / 10;
+    const bestPoints = Math.max(...list.map((i) => i.points));
+    const approvedCount = list.filter((i) => i.isApproved).length;
+    const passRate = Math.round((approvedCount / list.length) * 100);
+    const firstAttemptPoints = list[0].points;
+    const lastAttemptPoints = list[list.length - 1].points;
+    const delta = lastAttemptPoints - firstAttemptPoints;
+
+    return { avgPoints, bestPoints, passRate, delta };
+  }, [chartData, totalScore, isApproved]);
+
+  // Configuración de la métrica en el gráfico
+  const metricConfig = useMemo(() => {
+    switch (activeMetric) {
+      case 'points':
+        return {
+          title: 'Puntaje Oficial',
+          yUnit: 'pts',
+          domain: [0, 38] as [number, number],
+          threshold: 33,
+          thresholdLabel: 'Meta Legal CONASET: 33 pts',
+          dataKey: 'points',
+        };
+      case 'percentage':
+        return {
+          title: 'Porcentaje de Rendimiento',
+          yUnit: '%',
+          domain: [0, 100] as [number, number],
+          threshold: 87,
+          thresholdLabel: 'Aprobación: 87% (33 pts)',
+          dataKey: 'percentage',
+        };
+      case 'correctAnswers':
+        return {
+          title: 'Preguntas Correctas',
+          yUnit: 'aciertos',
+          domain: [0, 35] as [number, number],
+          threshold: 30,
+          thresholdLabel: 'Meta Sugerida: 30+ aciertos',
+          dataKey: 'correctAnswers',
+        };
+    }
+  }, [activeMetric]);
+
+  // Custom Dot para Recharts
+  const renderCustomDot = (props: any) => {
+    const { cx, cy, payload } = props;
+    if (cx == null || cy == null) return null;
+    const itemApproved = payload?.isApproved;
+    const isCurrent = payload?.id === currentExamId;
+    return (
+      <g key={`dot-${payload?.id || cx}-${payload?.attemptNumber}`}>
+        {isCurrent && (
+          <circle
+            cx={cx}
+            cy={cy}
+            r={10}
+            fill="none"
+            stroke={itemApproved ? '#10b981' : '#f43f5e'}
+            strokeWidth={2}
+            opacity={0.5}
+          />
+        )}
+        <circle
+          cx={cx}
+          cy={cy}
+          r={isCurrent ? 6 : 4.5}
+          fill={itemApproved ? '#10b981' : '#f43f5e'}
+          stroke="#ffffff"
+          strokeWidth={2}
+        />
+      </g>
+    );
+  };
+
+  // Custom Tooltip para Recharts
+  const CustomChartTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const item = payload[0].payload;
+      return (
+        <div className="bg-slate-900 text-white p-3.5 rounded-xl shadow-2xl border border-slate-700 text-xs min-w-[210px] z-50">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+            <span className="font-bold text-slate-100">{item.displayLabel}</span>
+            <span className="text-[10px] text-slate-400 font-mono">{item.date}</span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Puntaje Obtenido:</span>
+              <span className="font-bold text-sm text-white">{item.points} / 38 pts</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Porcentaje:</span>
+              <span className="font-semibold text-white">{item.percentage}%</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Aciertos:</span>
+              <span className="text-slate-200">{item.correctAnswers} / 35 preguntas</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Críticas (2 pts):</span>
+              <span className="text-amber-400 font-medium">{item.criticalCorrect} / 3</span>
+            </div>
+            {item.timeSpentSeconds > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Tiempo:</span>
+                <span className="text-slate-300">
+                  {Math.floor(item.timeSpentSeconds / 60)}m {item.timeSpentSeconds % 60}s
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="mt-2.5 pt-2 border-t border-slate-800 flex items-center justify-between">
+            <span className="text-slate-400 text-[11px]">Calificación:</span>
+            <span
+              className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                item.isApproved
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                  : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+              }`}
+            >
+              {item.isApproved ? 'Aprobado (>=33)' : 'Reprobado (<33)'}
+            </span>
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   // Filtrado para la revisión detallada
@@ -166,7 +488,7 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
               r={radius}
               fill="transparent"
               stroke="rgba(255,255,255,0.2)"
-              strokeWidth="12"
+              strokeWidth={12}
             />
             <circle
               cx="80"
@@ -174,7 +496,7 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
               r={radius}
               fill="transparent"
               stroke="#FFFFFF"
-              strokeWidth="12"
+              strokeWidth={12}
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
@@ -229,6 +551,243 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
             {criticalCorrect} <span className="text-sm font-normal text-slate-400">/ 3</span>
           </span>
           <span className="block text-[11px] text-slate-500 mt-1">Doble puntaje</span>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* GRÁFICO DE LÍNEAS CON RECHARTS: TENDENCIA DE RENDIMIENTO ENTRE ENSAYOS    */}
+      {/* ========================================================================= */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+        {/* Cabecera del Gráfico con Controles */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">
+                Tendencia de Rendimiento Histórico
+              </h3>
+            </div>
+            <p className="text-xs text-slate-500">
+              Evolución de tus calificaciones a través de las rondas de práctica y simulacros oficiales
+            </p>
+          </div>
+
+          {/* Selector de Métrica */}
+          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100 rounded-xl self-start sm:self-auto">
+            <button
+              onClick={() => setActiveMetric('points')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                activeMetric === 'points'
+                  ? 'bg-white text-blue-700 shadow-sm font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Puntaje (38 pts)
+            </button>
+            <button
+              onClick={() => setActiveMetric('percentage')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                activeMetric === 'percentage'
+                  ? 'bg-white text-blue-700 shadow-sm font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Porcentaje (%)
+            </button>
+            <button
+              onClick={() => setActiveMetric('correctAnswers')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                activeMetric === 'correctAnswers'
+                  ? 'bg-white text-blue-700 shadow-sm font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Aciertos (35)
+            </button>
+          </div>
+        </div>
+
+        {/* KPIs Resumen de Ensayos Múltiples */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50/80 p-4 rounded-xl border border-slate-100">
+          <div>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+              Total Ensayos
+            </span>
+            <span className="text-lg font-black text-slate-900">
+              {chartData.length} <span className="text-xs font-normal text-slate-500">rendidos</span>
+            </span>
+          </div>
+
+          <div>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+              Promedio Histórico
+            </span>
+            <span className="text-lg font-black text-blue-700">
+              {aggregateStats.avgPoints} <span className="text-xs font-normal text-slate-500">/ 38 pts</span>
+            </span>
+          </div>
+
+          <div>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+              Mejor Puntaje
+            </span>
+            <span className="text-lg font-black text-emerald-700">
+              {aggregateStats.bestPoints} <span className="text-xs font-normal text-slate-500">pts</span>
+            </span>
+          </div>
+
+          <div>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+              Tasa Aprobación
+            </span>
+            <span className="text-lg font-black text-slate-900">
+              {aggregateStats.passRate}%
+            </span>
+          </div>
+        </div>
+
+        {/* Visualización de la Línea Recharts */}
+        <div className="w-full h-72 sm:h-80 pt-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={chartData}
+              margin={{ top: 15, right: 25, left: -10, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+              <XAxis
+                dataKey="displayLabel"
+                stroke="#64748b"
+                fontSize={12}
+                tickLine={false}
+                axisLine={{ stroke: '#cbd5e1' }}
+              />
+              <YAxis
+                domain={metricConfig.domain}
+                stroke="#64748b"
+                fontSize={12}
+                tickLine={false}
+                axisLine={{ stroke: '#cbd5e1' }}
+                unit={activeMetric === 'percentage' ? '%' : ''}
+              />
+              <Tooltip content={<CustomChartTooltip />} />
+              <ReferenceLine
+                y={metricConfig.threshold}
+                stroke="#10b981"
+                strokeDasharray="4 4"
+                strokeWidth={2}
+                label={{
+                  value: metricConfig.thresholdLabel,
+                  fill: '#059669',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  position: 'insideTopRight',
+                  offset: 8,
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey={metricConfig.dataKey}
+                name={metricConfig.title}
+                stroke="#2563eb"
+                strokeWidth={3}
+                dot={renderCustomDot}
+                activeDot={{
+                  r: 8,
+                  fill: '#1d4ed8',
+                  stroke: '#ffffff',
+                  strokeWidth: 3,
+                }}
+                animationDuration={900}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Leyenda y Acciones de Historial */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-3 border-t border-slate-100 text-xs text-slate-600">
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="flex items-center gap-1.5 font-medium">
+              <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block border-2 border-white shadow-sm" />
+              Examen Aprobado (≥33 pts)
+            </span>
+            <span className="flex items-center gap-1.5 font-medium">
+              <span className="w-3 h-3 rounded-full bg-rose-500 inline-block border-2 border-white shadow-sm" />
+              Examen Reprobado (&lt;33 pts)
+            </span>
+            <span className="flex items-center gap-1.5 font-medium">
+              <span className="w-5 h-0.5 border-t-2 border-dashed border-emerald-500 inline-block" />
+              Umbral mínimo legal CONASET
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            {/* Botón para Simular Curva de Aprendizaje si el usuario lleva pocos intentos */}
+            <button
+              onClick={() => setShowDemoTrend(!showDemoTrend)}
+              className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                showDemoTrend
+                  ? 'bg-blue-50 border-blue-300 text-blue-700'
+                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+              }`}
+              title="Simula 5 rondas para observar la curva de aprendizaje acumulativa"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>{showDemoTrend ? 'Ver Mis Intentos Reales' : 'Simular 5 Rondas (Demo)'}</span>
+            </button>
+
+            {/* Botón Limpiar Historial */}
+            {history.length > 1 && !showDemoTrend && (
+              <>
+                {showConfirmClear ? (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={handleClearHistory}
+                      className="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition-colors"
+                    >
+                      Confirmar
+                    </button>
+                    <button
+                      onClick={() => setShowConfirmClear(false)}
+                      className="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowConfirmClear(true)}
+                    className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors rounded-lg hover:bg-rose-50"
+                    title="Reiniciar historial guardado"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Mensaje de Consejo según Tendencia */}
+        <div className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-200/80 text-xs text-blue-950 flex items-start gap-2.5">
+          <Target className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold">Estrategia de Preparación CONASET:</span>{' '}
+            {aggregateStats.avgPoints >= 33 ? (
+              <span>
+                ¡Consistencia destacada! Tu promedio está por encima de los 33 puntos requeridos. Mantener esta regularidad en diferentes bancos barajados garantiza alta probabilidad de éxito en el examen municipal real.
+              </span>
+            ) : chartData.length > 1 && aggregateStats.delta > 0 ? (
+              <span>
+                Curva ascendente positiva (+{aggregateStats.delta} puntos respecto a tu primer ensayo). Continúa rindiendo exámenes de 35 preguntas para afianzar las 280 preguntas oficiales y no descuidar las 3 críticas de doble puntaje.
+              </span>
+            ) : (
+              <span>
+                Cada nuevo simulacro selecciona aleatoriamente 35 preguntas de las 280 oficiales (3 con puntuación doble). Rinde al menos 3 a 5 rondas para visualizar tu curva de mejora en este gráfico.
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
