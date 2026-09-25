@@ -3,13 +3,15 @@ import {
   CheckCircle2, XCircle, RotateCcw, Award, AlertTriangle, 
   Clock, ShieldAlert, BookOpen, ChevronDown, ChevronUp, ArrowRight,
   Filter, Check, X, TrendingUp, Sparkles, History, Trash2,
-  Target, BarChart3
+  Target, BarChart3, Download, FileText
 } from 'lucide-react';
 import { Question, UserAnswer, QuestionCategory, TestHistoryItem } from '../types/quiz';
 import { TrafficIllustration } from './TrafficIllustration';
 import { ProgressHistoryChart } from './ProgressHistoryChart';
+import { saveExamAttempt, STORAGE_KEY_EXAM_HISTORY } from '../utils/examHistory';
+import { exportExamSummaryPDF } from '../utils/pdfExport';
 
-const STORAGE_KEY_HISTORY = 'conaset_exam_history';
+const STORAGE_KEY_HISTORY = STORAGE_KEY_EXAM_HISTORY;
 
 interface ExamResultsProps {
   questions: Question[];
@@ -109,6 +111,34 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m}m ${s < 10 ? '0' : ''}${s}s`;
+  };
+
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      await new Promise((resolve) => setTimeout(resolve, 80));
+      exportExamSummaryPDF({
+        questions,
+        userAnswers,
+        totalScore,
+        percentage,
+        correctCount,
+        criticalCorrect,
+        criticalTotal,
+        criticalScoreEarned,
+        isApproved,
+        timeSpentSeconds,
+        examSessionId: currentExamId,
+        categoryStats,
+        mistakes,
+      });
+    } catch (err) {
+      console.error('Error al generar el PDF del resumen:', err);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   // Registrar y cargar historial en localStorage
@@ -382,6 +412,28 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
               <ShieldAlert className="w-3.5 h-3.5 text-amber-300" />
               Críticas: {criticalCorrect}/{criticalTotal} correctas ({criticalScoreEarned}/6 pts)
             </span>
+          </div>
+
+          {/* Botón Descargar Resumen en Banner */}
+          <div className="pt-3 flex justify-center md:justify-start">
+            <button
+              onClick={handleDownloadPdf}
+              disabled={isGeneratingPdf}
+              className="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-bold rounded-xl text-xs sm:text-sm transition-all flex items-center gap-2 border border-white/30 shadow-sm cursor-pointer disabled:opacity-75"
+              title="Descargar informe oficial de resultados en formato PDF (Download Summary)"
+            >
+              {isGeneratingPdf ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Generando PDF...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>Descargar Resumen PDF</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
 
@@ -682,8 +734,27 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
         </div>
       </div>
 
-      {/* Controles de Acción (Reintentar / Menú) */}
+      {/* Controles de Acción (Descargar Resumen PDF / Reintentar / Menú) */}
       <div className="flex flex-col sm:flex-row items-center gap-3">
+        <button
+          onClick={handleDownloadPdf}
+          disabled={isGeneratingPdf}
+          className="w-full sm:w-auto py-4 px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2 text-base disabled:opacity-75 cursor-pointer"
+          title="Exportar informe oficial de resultados en formato PDF con jsPDF (Download Summary)"
+        >
+          {isGeneratingPdf ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>Generando PDF...</span>
+            </>
+          ) : (
+            <>
+              <Download className="w-5 h-5" />
+              <span>Descargar Resumen PDF</span>
+            </>
+          )}
+        </button>
+
         <button
           onClick={onRestart}
           className="w-full sm:w-auto flex-1 py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2 text-base"
@@ -691,6 +762,7 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
           <RotateCcw className="w-5 h-5" />
           Rendir un Nuevo Examen Barajado
         </button>
+
         <button
           onClick={onGoHome}
           className="w-full sm:w-auto py-4 px-6 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-semibold rounded-xl transition-colors text-base"
@@ -889,6 +961,40 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
               );
             })
           )}
+        </div>
+      </div>
+
+      {/* Botones Finales al Pie de la Revisión */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
+        <div className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
+          Guarda o imprime tu informe de examen oficial en PDF para repasar las preguntas erradas sin conexión.
+        </div>
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+          <button
+            onClick={handleDownloadPdf}
+            disabled={isGeneratingPdf}
+            className="w-full sm:w-auto py-3 px-5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-75 cursor-pointer"
+            title="Descargar informe oficial de resultados en formato PDF (Download Summary)"
+          >
+            {isGeneratingPdf ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Generando PDF...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                <span>Descargar Resumen PDF</span>
+              </>
+            )}
+          </button>
+          <button
+            onClick={onRestart}
+            className="w-full sm:w-auto py-3 px-5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow transition-colors flex items-center justify-center gap-2 text-sm"
+          >
+            <RotateCcw className="w-4 h-4" />
+            <span>Nuevo Examen</span>
+          </button>
         </div>
       </div>
     </div>

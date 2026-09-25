@@ -4,16 +4,27 @@ import {
   ChevronRight, ChevronLeft, RotateCcw, Volume2, VolumeX,
   HelpCircle, BookOpen, CheckCircle2, CheckSquare, 
   X, AlertOctagon, Sparkles, Send, Flame, RefreshCw,
-  Search, Image as ImageIcon, Check, Layers
+  Search, Image as ImageIcon, Check, Layers, Target
 } from 'lucide-react';
-import { Question, UserAnswer, SimulatorMode, QuestionCategory } from './types/quiz';
+import { Question, UserAnswer, SimulatorMode, QuestionCategory, TestHistoryItem } from './types/quiz';
 import { QUESTION_BANK, generateConasetExam, shuffleArray } from './data/questions';
 import { QuestionCard } from './components/QuestionCard';
 import { QuestionNavigator } from './components/QuestionNavigator';
 import { LegalInstructionsModal } from './components/LegalInstructionsModal';
+import { RecentExamsSummary } from './components/RecentExamsSummary';
+import { UniqueProgressTracker } from './components/UniqueProgressTracker';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ThemeToggle } from './components/ThemeToggle';
 import { playSound } from './utils/sound';
+import { getRecentExams, clearStoredExamHistory } from './utils/examHistory';
+import { 
+  computePracticeProgress, 
+  recordQuestionAnswered, 
+  recordBatchQuestionsAnswered, 
+  resetPracticeProgress, 
+  getUnansweredQuestionIds, 
+  PracticeProgressState 
+} from './utils/practiceProgress';
 
 const ExamResults = lazy(() =>
   import('./components/ExamResults').then((m) => ({ default: m.ExamResults }))
@@ -41,6 +52,26 @@ export default function App() {
   const [isSubmitConfirmOpen, setIsSubmitConfirmOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [examSessionId, setExamSessionId] = useState<string>(() => 'exam-' + Date.now());
+  const [recentExams, setRecentExams] = useState<TestHistoryItem[]>(() => getRecentExams(5));
+  const [practiceProgress, setPracticeProgress] = useState<PracticeProgressState>(() => computePracticeProgress());
+
+  // Recargar los últimos 5 exámenes y progreso de práctica al volver a la pantalla de bienvenida
+  useEffect(() => {
+    if (appState === 'welcome') {
+      setRecentExams(getRecentExams(5));
+      setPracticeProgress(computePracticeProgress());
+    }
+  }, [appState]);
+
+  const handleClearHistory = () => {
+    clearStoredExamHistory();
+    setRecentExams([]);
+  };
+
+  const handleResetPracticeProgress = () => {
+    const cleared = resetPracticeProgress();
+    setPracticeProgress(cleared);
+  };
 
   // Estados específicos para Modo Práctica
   const [practiceCategory, setPracticeCategory] = useState<string>('all');
@@ -90,6 +121,29 @@ export default function App() {
     } else if (category !== 'all') {
       pool = pool.filter((q) => q.category === category);
     }
+    const shuffled = shuffleArray(pool).map((q) => ({
+      ...q,
+      options: shuffleArray(q.options),
+    }));
+
+    setQuestions(shuffled);
+    setUserAnswers({});
+    setCurrentIndex(0);
+    setPracticeChecked(false);
+    setPracticeScore({ correct: 0, total: 0, points: 0 });
+    setAppState('practice');
+    playSound('click', isMuted);
+  };
+
+  // Iniciar Modo Práctica con preguntas no vistas aún
+  const handleStartPracticeUnanswered = () => {
+    const unansweredIds = getUnansweredQuestionIds();
+    if (unansweredIds.length === 0) {
+      handleStartPractice('all');
+      return;
+    }
+    setPracticeCategory('unanswered');
+    const pool = QUESTION_BANK.filter((q) => unansweredIds.includes(q.id));
     const shuffled = shuffleArray(pool).map((q) => ({
       ...q,
       options: shuffleArray(q.options),
@@ -188,6 +242,15 @@ export default function App() {
       }));
     }
 
+    // Registrar en el progreso acumulado de preguntas únicas
+    const updated = recordQuestionAnswered(
+      currentQ.id,
+      isFullyCorrect,
+      currentQ.category,
+      currentQ.isCritical
+    );
+    setPracticeProgress(updated);
+
     setPracticeChecked(true);
   };
 
@@ -198,7 +261,11 @@ export default function App() {
       setPracticeChecked(false);
     } else {
       // Barajar nuevo set
-      handleStartPractice(practiceCategory);
+      if (practiceCategory === 'unanswered') {
+        handleStartPracticeUnanswered();
+      } else {
+        handleStartPractice(practiceCategory);
+      }
     }
   };
 
@@ -213,6 +280,27 @@ export default function App() {
   // Finalizar Examen Oficial
   const finishExam = () => {
     setIsSubmitConfirmOpen(false);
+
+    // Registrar en lote las preguntas respondidas en el examen
+    const batch = questions
+      .filter((q) => (userAnswers[q.id]?.selectedOptionIndices || []).length > 0)
+      .map((q) => {
+        const sel = userAnswers[q.id].selectedOptionIndices;
+        const correct = q.options.map((opt, i) => (opt.isCorrect ? i : -1)).filter((i) => i !== -1);
+        const isCorrect = correct.length === sel.length && sel.every((i) => correct.includes(i));
+        return {
+          questionId: q.id,
+          isCorrect,
+          category: q.category,
+          isCritical: q.isCritical,
+        };
+      });
+
+    if (batch.length > 0) {
+      const updated = recordBatchQuestionsAnswered(batch);
+      setPracticeProgress(updated);
+    }
+
     setAppState('results');
     playSound('finish', isMuted);
   };
@@ -368,6 +456,15 @@ export default function App() {
               </div>
             </div>
 
+            {/* Componente de Seguimiento de Progreso de Preguntas Únicas */}
+            <UniqueProgressTracker
+              progress={practiceProgress}
+              onPracticeCategory={handleStartPractice}
+              onPracticeUnanswered={handleStartPracticeUnanswered}
+              onExploreBank={() => setAppState('explorer')}
+              onResetProgress={handleResetPracticeProgress}
+            />
+
             {/* Reglas Claves Oficiales */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-2">
@@ -406,6 +503,13 @@ export default function App() {
                 </p>
               </div>
             </div>
+
+            {/* Historial de los Últimos 5 Exámenes (Guardado en localStorage) */}
+            <RecentExamsSummary
+              exams={recentExams}
+              onStartExam={handleStartExam}
+              onClearHistory={handleClearHistory}
+            />
 
             {/* Selector de Modo Principal: 3 Tarjetas Claras */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
@@ -698,7 +802,14 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 text-xs font-semibold">
+              <div className="flex items-center gap-2 sm:gap-3 text-xs font-semibold">
+                <div 
+                  className="hidden sm:flex items-center gap-1.5 bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300 px-3 py-1.5 rounded-lg"
+                  title="Preguntas únicas respondidas sobre el total de 280 oficiales"
+                >
+                  <Target className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <span>Cobertura: {practiceProgress.percentageAnswered}% ({practiceProgress.totalUniqueAnswered}/280)</span>
+                </div>
                 <div className="bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg text-slate-700 dark:text-slate-200">
                   Aciertos: <span className="text-emerald-600 dark:text-emerald-400 font-bold">{practiceScore.correct}</span> / {practiceScore.total}
                 </div>
