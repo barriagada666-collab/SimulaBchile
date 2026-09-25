@@ -42,8 +42,16 @@ const ComponentLoadingFallback = () => (
 
 const TEST_DURATION_SECONDS = 45 * 60; // 45 minutos oficiales
 
+// Permite enlaces directos (/ #explorer, #banco, etc.) y navegación sin recargas
+function getInitialStateFromHash(): 'welcome' | 'exam' | 'practice' | 'results' | 'explorer' {
+  if (typeof window === 'undefined') return 'welcome';
+  const hash = window.location.hash.toLowerCase().replace(/^#\/?/, '').trim();
+  if (hash === 'explorer' || hash === 'banco' || hash === 'preguntas') return 'explorer';
+  return 'welcome';
+}
+
 export default function App() {
-  const [appState, setAppState] = useState<'welcome' | 'exam' | 'practice' | 'results' | 'explorer'>('welcome');
+  const [appState, setAppState] = useState<'welcome' | 'exam' | 'practice' | 'results' | 'explorer'>(getInitialStateFromHash);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<number, UserAnswer>>({});
@@ -54,6 +62,33 @@ export default function App() {
   const [examSessionId, setExamSessionId] = useState<string>(() => 'exam-' + Date.now());
   const [recentExams, setRecentExams] = useState<TestHistoryItem[]>(() => getRecentExams(5));
   const [practiceProgress, setPracticeProgress] = useState<PracticeProgressState>(() => computePracticeProgress());
+
+  // Sincronizar URL hash para permitir enlaces directos y botones Atrás/Adelante del navegador
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.toLowerCase().replace(/^#\/?/, '').trim();
+      if (hash === 'explorer' || hash === 'banco' || hash === 'preguntas') {
+        setAppState('explorer');
+      } else if (hash === '' || hash === 'inicio' || hash === 'welcome') {
+        setAppState((prev) => (prev === 'explorer' || prev === 'results' ? 'welcome' : prev));
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (appState === 'explorer' && window.location.hash !== '#explorer') {
+        window.history.pushState(null, '', '#explorer');
+      } else if (appState === 'welcome' && window.location.hash) {
+        window.history.pushState(null, '', window.location.pathname + window.location.search);
+      }
+    } catch {
+      // Safe fallback si el entorno restringe pushState
+    }
+  }, [appState]);
 
   // Recargar los últimos 5 exámenes y progreso de práctica al volver a la pantalla de bienvenida
   useEffect(() => {
@@ -418,41 +453,103 @@ export default function App() {
         {/* PANTALLA 1: BIENVENIDA & INSTRUCCIONES OFICIALES */}
         {/* ============================================================== */}
         {appState === 'welcome' && (
-          <div className="max-w-4xl mx-auto w-full space-y-8 animate-fade-in">
+          <div className="max-w-4xl mx-auto w-full space-y-6 sm:space-y-8 animate-fade-in">
             {/* Header Hero */}
-            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 rounded-3xl p-8 sm:p-12 text-white shadow-xl relative overflow-hidden border border-slate-800">
-              <div className="relative z-10 max-w-2xl space-y-4">
+            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden border border-slate-800">
+              <div className="relative z-10 max-w-2xl space-y-3">
                 <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-blue-300">
                   <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping" />
                   Base Oficial de 280 Preguntas con Imágenes
                 </div>
-                <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
                   Examen Teórico Licencia Clase B Chile
                 </h1>
-                <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-                  Prepárate con la base íntegra de <strong>280 preguntas oficiales</strong> con ilustraciones, señales de tránsito, preguntas críticas de doble puntaje (Alcohol, Velocidad, Seguridad Infantil) y la normativa vigente de la Ley de Tránsito 18.290 de CONASET.
+                <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                  Prepárate con la base íntegra de <strong>280 preguntas oficiales</strong> de CONASET con ilustraciones, señales de tránsito, preguntas críticas de doble puntaje (Alcohol, Velocidad, Seguridad Infantil) y la normativa de la Ley 18.290.
                 </p>
-                <div className="pt-2 flex flex-wrap gap-3">
-                  <button
-                    onClick={handleStartExam}
-                    className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg transition-colors flex items-center gap-2 text-sm"
-                  >
-                    <span>Rendir Examen Oficial (35 Preguntas)</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setAppState('explorer')}
-                    className="px-6 py-3 bg-slate-800/90 hover:bg-slate-700 text-slate-100 font-bold rounded-xl border border-slate-700 transition-colors flex items-center gap-2 text-sm"
-                  >
-                    <Search className="w-4 h-4 text-blue-400" />
-                    <span>Ver las 280 Preguntas</span>
-                  </button>
-                </div>
               </div>
 
               {/* Decorative vehicle graphic */}
               <div className="absolute right-4 -bottom-6 opacity-10 pointer-events-none hidden md:block">
-                <Car className="w-72 h-72 text-white" />
+                <Car className="w-64 h-64 text-white" />
+              </div>
+            </div>
+
+            {/* Selector de Modo Principal: 3 Tarjetas Claras ARRIBA */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Tarjeta 1: Examen Oficial */}
+              <div className="bg-white dark:bg-slate-900 border-2 border-blue-600 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all flex flex-col justify-between">
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-100/70 dark:bg-blue-950/80 px-2.5 py-1 rounded-md border border-blue-200 dark:border-blue-800">
+                      Simulacro Oficial
+                    </span>
+                    <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Modo Examen Real CONASET
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
+                    Test estricto como en la Dirección de Tránsito: 35 preguntas aleatorias, 45 minutos cronometrados y entrega de informe con puntaje sobre 38 pts.
+                  </p>
+                </div>
+                <button
+                  onClick={handleStartExam}
+                  className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 text-sm"
+                >
+                  <span>Iniciar Examen</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Tarjeta 2: Modo Práctica Guiada */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/80 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800">
+                      Estudio Activo
+                    </span>
+                    <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Modo Práctica Guiada
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
+                    Pregunta por pregunta con comprobación y retroalimentación inmediata, explicaciones técnicas y artículos de la Ley de Tránsito.
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleStartPractice('all')}
+                  className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold rounded-xl border border-slate-700 transition-colors flex items-center justify-center gap-2 text-sm"
+                >
+                  <span>Practicar Ahora</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Tarjeta 3: Explorador Banco 280 */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 bg-purple-100/70 dark:bg-purple-950/80 px-2.5 py-1 rounded-md border border-purple-200 dark:border-purple-800">
+                      Banco Completo
+                    </span>
+                    <Layers className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Explorador 280 Preguntas
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
+                    Consulta el cuestionario completo con buscador por texto o número (ej: #38, #142, #242), ilustraciones, soluciones oficiales y progreso de dominio.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setAppState('explorer')}
+                  className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm shadow-md"
+                >
+                  <span>Explorar 280 Preguntas</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
 
@@ -510,84 +607,6 @@ export default function App() {
               onStartExam={handleStartExam}
               onClearHistory={handleClearHistory}
             />
-
-            {/* Selector de Modo Principal: 3 Tarjetas Claras */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-              {/* Tarjeta 1: Examen Oficial */}
-              <div className="bg-white dark:bg-slate-900 border-2 border-blue-600 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all flex flex-col justify-between">
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-100/70 dark:bg-blue-950/80 px-2.5 py-1 rounded-md border border-blue-200 dark:border-blue-800">
-                      Simulacro Oficial
-                    </span>
-                    <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                    Modo Examen Real CONASET
-                  </h3>
-                  <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
-                    Test estricto como en la Dirección de Tránsito: 35 preguntas aleatorias, 45 minutos cronometrados y entrega de informe con puntaje sobre 38 pts.
-                  </p>
-                </div>
-                <button
-                  onClick={handleStartExam}
-                  className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-colors flex items-center justify-center gap-2 text-sm"
-                >
-                  <span>Iniciar Examen</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Tarjeta 2: Modo Práctica Guiada */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/80 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800">
-                      Estudio Activo
-                    </span>
-                    <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                    Modo Práctica Guiada
-                  </h3>
-                  <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
-                    Pregunta por pregunta con comprobación y retroalimentación inmediata, explicaciones técnicas y artículos de la Ley de Tránsito.
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleStartPractice('all')}
-                  className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
-                >
-                  <span>Practicar Ahora</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Tarjeta 3: Explorador Banco 280 */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 bg-purple-100/70 dark:bg-purple-950/80 px-2.5 py-1 rounded-md border border-purple-200 dark:border-purple-800">
-                      Banco Completo
-                    </span>
-                    <Layers className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                    Explorador 280 Preguntas
-                  </h3>
-                  <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
-                    Consulta el cuestionario completo con buscador por texto o número (ej: #38, #142, #242), ilustraciones, soluciones oficiales y progreso de dominio.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setAppState('explorer')}
-                  className="w-full py-3 px-4 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm shadow-sm"
-                >
-                  <span>Explorar 280 Preguntas</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
 
             {/* Accesos rápidos de estudio por categoría */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
