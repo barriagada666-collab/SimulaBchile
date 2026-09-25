@@ -18,12 +18,6 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: false,
     chunkSizeWarningLimit: 1000,
-    rollupOptions: {
-      external: ['react-is'],
-    },
-    rolldownOptions: {
-      external: ['react-is'],
-    },
   },
   server: {
     port: 3000,
