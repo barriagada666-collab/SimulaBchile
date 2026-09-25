@@ -7,7 +7,8 @@
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist .vite",
+    "clean:build": "rm -rf dist .vite && tsc --noEmit && vite build",
     "lint": "tsc --noEmit",
     "type-check": "tsc --noEmit"
   },
@@ -17,6 +18,7 @@
     "lucide-react": "^0.546.0",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
+    "react-is": "^19.0.0",
     "tailwindcss": "^4.3.3",
     "vite": "^8.3.1"
   },
@@ -28,6 +30,7 @@
     "typescript": "^7.0.2"
   },
   "overrides": {
-    "esbuild": "^0.28.2"
+    "esbuild": "^0.28.2",
+    "react-is": "^19.0.0"
   }
 }
