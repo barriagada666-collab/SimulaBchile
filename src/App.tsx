@@ -12,6 +12,7 @@ import { QuestionCard } from './components/QuestionCard';
 import { QuestionNavigator } from './components/QuestionNavigator';
 import { LegalInstructionsModal } from './components/LegalInstructionsModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { ThemeToggle } from './components/ThemeToggle';
 import { playSound } from './utils/sound';
 
 const ExamResults = lazy(() =>
@@ -245,9 +246,9 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white transition-colors duration-200">
       {/* Navbar Superior Oficial */}
-      <header className="bg-slate-900 text-white border-b-2 border-blue-600 sticky top-0 z-40 shadow-md">
+      <header className="bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md text-white border-b-2 border-blue-600 sticky top-0 z-40 shadow-md">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           {/* Logo y Título */}
           <div 
@@ -273,7 +274,7 @@ export default function App() {
           </div>
 
           {/* Botones de Navegación Rápida */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => setAppState('welcome')}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
@@ -307,6 +308,9 @@ export default function App() {
               <BookOpen className="w-4 h-4 text-blue-400" />
               <span className="hidden sm:inline">Legal</span>
             </button>
+
+            {/* Selector de Tema Claro/Oscuro/Auto */}
+            <ThemeToggle />
 
             <button
               onClick={() => setIsMuted(!isMuted)}
@@ -366,39 +370,39 @@ export default function App() {
 
             {/* Reglas Claves Oficiales */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
-                <div className="flex items-center gap-2 text-slate-900 font-bold">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-2">
+                <div className="flex items-center gap-2 text-slate-900 dark:text-white font-bold">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
                     35
                   </div>
                   <span>Preguntas y 45 Minutos</span>
                 </div>
-                <p className="text-slate-600 text-xs leading-relaxed">
+                <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
                   En el simulacro oficial se seleccionan 35 preguntas aleatorias del banco de 280. Tiempo límite: 45 minutos.
                 </p>
               </div>
 
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
-                <div className="flex items-center gap-2 text-slate-900 font-bold">
-                  <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-2">
+                <div className="flex items-center gap-2 text-slate-900 dark:text-white font-bold">
+                  <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
                     3
                   </div>
                   <span>Preguntas Críticas (2 Pts)</span>
                 </div>
-                <p className="text-slate-600 text-xs leading-relaxed">
-                  3 preguntas tienen <strong className="text-slate-800">doble puntaje</strong> obligatorio en temas críticos: Alcohol/Drogas, Velocidad y Retención Infantil.
+                <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
+                  3 preguntas tienen <strong className="text-slate-800 dark:text-slate-100">doble puntaje</strong> obligatorio en temas críticos: Alcohol/Drogas, Velocidad y Retención Infantil.
                 </p>
               </div>
 
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2">
-                <div className="flex items-center gap-2 text-slate-900 font-bold">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-2">
+                <div className="flex items-center gap-2 text-slate-900 dark:text-white font-bold">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
                     33
                   </div>
                   <span>Puntos para Aprobar</span>
                 </div>
-                <p className="text-slate-600 text-xs leading-relaxed">
-                  Total de 38 puntos en juego. Se exige un mínimo de <strong className="text-emerald-700">33 puntos (86,8%)</strong> para aprobar el examen teórico.
+                <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
+                  Total de 38 puntos en juego. Se exige un mínimo de <strong className="text-emerald-600 dark:text-emerald-400">33 puntos (86,8%)</strong> para aprobar el examen teórico.
                 </p>
               </div>
             </div>
@@ -406,18 +410,18 @@ export default function App() {
             {/* Selector de Modo Principal: 3 Tarjetas Claras */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
               {/* Tarjeta 1: Examen Oficial */}
-              <div className="bg-white border-2 border-blue-600 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all flex flex-col justify-between">
+              <div className="bg-white dark:bg-slate-900 border-2 border-blue-600 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all flex flex-col justify-between">
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-100/70 px-2.5 py-1 rounded-md">
+                    <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-100/70 dark:bg-blue-950/80 px-2.5 py-1 rounded-md border border-blue-200 dark:border-blue-800">
                       Simulacro Oficial
                     </span>
-                    <Clock className="w-5 h-5 text-blue-600" />
+                    <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                     Modo Examen Real CONASET
                   </h3>
-                  <p className="text-slate-600 text-xs leading-relaxed">
+                  <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
                     Test estricto como en la Dirección de Tránsito: 35 preguntas aleatorias, 45 minutos cronometrados y entrega de informe con puntaje sobre 38 pts.
                   </p>
                 </div>
@@ -431,24 +435,24 @@ export default function App() {
               </div>
 
               {/* Tarjeta 2: Modo Práctica Guiada */}
-              <div className="bg-white border border-slate-200 hover:border-slate-300 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/70 px-2.5 py-1 rounded-md">
+                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/80 px-2.5 py-1 rounded-md border border-emerald-200 dark:border-emerald-800">
                       Estudio Activo
                     </span>
-                    <BookOpen className="w-5 h-5 text-emerald-600" />
+                    <BookOpen className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                     Modo Práctica Guiada
                   </h3>
-                  <p className="text-slate-600 text-xs leading-relaxed">
+                  <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
                     Pregunta por pregunta con comprobación y retroalimentación inmediata, explicaciones técnicas y artículos de la Ley de Tránsito.
                   </p>
                 </div>
                 <button
                   onClick={() => handleStartPractice('all')}
-                  className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+                  className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
                 >
                   <span>Practicar Ahora</span>
                   <ChevronRight className="w-4 h-4" />
@@ -456,18 +460,18 @@ export default function App() {
               </div>
 
               {/* Tarjeta 3: Explorador Banco 280 */}
-              <div className="bg-white border border-slate-200 hover:border-slate-300 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-purple-700 bg-purple-100/70 px-2.5 py-1 rounded-md">
+                    <span className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 bg-purple-100/70 dark:bg-purple-950/80 px-2.5 py-1 rounded-md border border-purple-200 dark:border-purple-800">
                       Banco Completo
                     </span>
-                    <Layers className="w-5 h-5 text-purple-600" />
+                    <Layers className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                     Explorador 280 Preguntas
                   </h3>
-                  <p className="text-slate-600 text-xs leading-relaxed">
+                  <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
                     Consulta el cuestionario completo con buscador por texto o número (ej: #38, #142, #242), ilustraciones, soluciones oficiales y progreso de dominio.
                   </p>
                 </div>
@@ -482,70 +486,70 @@ export default function App() {
             </div>
 
             {/* Accesos rápidos de estudio por categoría */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
+              <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                 Práctica Directa por Temario Específico (280 Preguntas)
               </h3>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => handleStartPractice('images')}
-                  className="px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-50 text-blue-900 border border-blue-200 hover:bg-blue-100 transition-colors flex items-center gap-1.5"
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors flex items-center gap-1.5"
                 >
-                  <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
+                  <ImageIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                   <span>Preguntas con Ilustraciones y Señales</span>
                 </button>
                 <button
                   onClick={() => handleStartPractice('critical')}
-                  className="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 transition-colors flex items-center gap-1.5"
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors flex items-center gap-1.5"
                 >
-                  <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
+                  <ShieldAlert className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                   <span>Preguntas Críticas (Alcohol / Velocidad / SRI)</span>
                 </button>
                 <button
                   onClick={() => handleStartPractice('alcohol')}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                 >
                   Alcohol, Drogas y Medicamentos
                 </button>
                 <button
                   onClick={() => handleStartPractice('velocidad')}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                 >
                   Velocidad, Frenado y Detención
                 </button>
                 <button
                   onClick={() => handleStartPractice('infantil')}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                 >
                   Sistemas Retención Infantil
                 </button>
                 <button
                   onClick={() => handleStartPractice('mecanica')}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                 >
                   Mecánica y Mantenimiento
                 </button>
                 <button
                   onClick={() => handleStartPractice('senales')}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                 >
                   Señales y Demarcaciones
                 </button>
                 <button
                   onClick={() => handleStartPractice('seguridad')}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                 >
                   Seguridad y Convivencia Vial
                 </button>
                 <button
                   onClick={() => handleStartPractice('clima')}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                 >
                   Clima Adverso y Noche
                 </button>
                 <button
                   onClick={() => handleStartPractice('accidentes')}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                 >
                   Accidentes y Primeros Auxilios
                 </button>
@@ -569,16 +573,16 @@ export default function App() {
         {appState === 'exam' && currentQ && (
           <div className="w-full space-y-6 animate-fade-in flex flex-col flex-1">
             {/* Barra de Control y Temporizador */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
               {/* Progreso */}
               <div className="flex-1 w-full sm:w-auto">
-                <div className="flex justify-between text-xs font-semibold text-slate-600 mb-1.5">
+                <div className="flex justify-between text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1.5">
                   <span>
                     Pregunta {currentIndex + 1} de {questions.length}
                   </span>
                   <span>{answeredTotal} de {questions.length} respondidas</span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
                   <div
                     className="bg-blue-600 h-full transition-all duration-300"
                     style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
@@ -591,10 +595,10 @@ export default function App() {
                 <div
                   className={`px-4 py-2 rounded-xl font-mono font-bold text-sm sm:text-base flex items-center gap-2 border ${
                     timeRemaining < 300
-                      ? 'bg-rose-50 border-rose-300 text-rose-700 animate-pulse'
+                      ? 'bg-rose-50 dark:bg-rose-950/70 border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 animate-pulse'
                       : timeRemaining < 600
-                      ? 'bg-amber-50 border-amber-300 text-amber-800'
-                      : 'bg-slate-900 border-slate-800 text-white'
+                      ? 'bg-amber-50 dark:bg-amber-950/70 border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300'
+                      : 'bg-slate-900 dark:bg-slate-800 border-slate-800 dark:border-slate-700 text-white'
                   }`}
                   title="Tiempo restante para el examen"
                 >
@@ -615,7 +619,7 @@ export default function App() {
             {/* Layout Principal: Pregunta + Navegador */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 items-start">
               {/* Tarjeta de la Pregunta */}
-              <div className="lg:col-span-8 bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col min-h-[500px]">
+              <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col min-h-[500px]">
                 <QuestionCard
                   question={currentQ}
                   currentIndex={currentIndex}
@@ -627,11 +631,11 @@ export default function App() {
                 />
 
                 {/* Botones de Navegación Anterior / Siguiente */}
-                <div className="mt-8 pt-5 border-t border-slate-100 flex items-center justify-between gap-3">
+                <div className="mt-8 pt-5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
                   <button
                     onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
                     disabled={currentIndex === 0}
-                    className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
                   >
                     <ChevronLeft className="w-4 h-4" />
                     <span>Anterior</span>
@@ -641,7 +645,7 @@ export default function App() {
                     {currentIndex < questions.length - 1 ? (
                       <button
                         onClick={() => setCurrentIndex((prev) => Math.min(questions.length - 1, prev + 1))}
-                        className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-xl transition-colors flex items-center gap-1.5"
+                        className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-sm rounded-xl transition-colors flex items-center gap-1.5"
                       >
                         <span>Siguiente</span>
                         <ChevronRight className="w-4 h-4" />
@@ -679,28 +683,28 @@ export default function App() {
         {appState === 'practice' && currentQ && (
           <div className="max-w-3xl mx-auto w-full space-y-6 animate-fade-in flex flex-col flex-1">
             {/* Header de Modo Práctica */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold">
                   <BookOpen className="w-4 h-4" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-800">
+                  <h2 className="text-sm font-bold text-slate-800 dark:text-white">
                     Modo Estudio Guiado
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Pregunta {currentIndex + 1} de {questions.length} · Retroalimentación inmediata
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 text-xs font-semibold">
-                <div className="bg-slate-100 px-3 py-1.5 rounded-lg text-slate-700">
-                  Aciertos: <span className="text-emerald-600 font-bold">{practiceScore.correct}</span> / {practiceScore.total}
+                <div className="bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg text-slate-700 dark:text-slate-200">
+                  Aciertos: <span className="text-emerald-600 dark:text-emerald-400 font-bold">{practiceScore.correct}</span> / {practiceScore.total}
                 </div>
                 <button
                   onClick={() => setAppState('welcome')}
-                  className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition-colors"
+                  className="px-3 py-1.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-colors"
                 >
                   Salir
                 </button>
@@ -708,7 +712,7 @@ export default function App() {
             </div>
 
             {/* Tarjeta de Pregunta en Modo Práctica */}
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col flex-1">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col flex-1">
               <QuestionCard
                 question={currentQ}
                 currentIndex={currentIndex}
@@ -721,11 +725,11 @@ export default function App() {
               />
 
               {/* Botones de Navegación en Práctica */}
-              <div className="mt-8 pt-5 border-t border-slate-100 flex items-center justify-between gap-3">
+              <div className="mt-8 pt-5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
                 <button
                   onClick={handlePracticePrev}
                   disabled={currentIndex === 0}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-xs transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold text-xs transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   <span>Anterior</span>
@@ -737,7 +741,7 @@ export default function App() {
                     disabled={selectedIndices.length === 0}
                     className={`px-8 py-3 rounded-xl font-bold text-sm transition-all ${
                       selectedIndices.length === 0
-                        ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                        ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed'
                         : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md'
                     }`}
                   >
@@ -746,7 +750,7 @@ export default function App() {
                 ) : (
                   <button
                     onClick={handlePracticeNext}
-                    className="px-8 py-3 rounded-xl font-bold text-sm bg-slate-900 hover:bg-black text-white shadow-md transition-all flex items-center gap-2"
+                    className="px-8 py-3 rounded-xl font-bold text-sm bg-slate-900 hover:bg-black dark:bg-slate-800 dark:hover:bg-slate-700 text-white shadow-md transition-all flex items-center gap-2"
                   >
                     <span>{currentIndex < questions.length - 1 ? 'Siguiente Pregunta' : 'Comenzar Otra Ronda'}</span>
                     <ChevronRight className="w-4 h-4" />
@@ -777,25 +781,25 @@ export default function App() {
       {/* Modal de Confirmación si faltan preguntas por responder al entregar */}
       {isSubmitConfirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div className="flex items-center gap-3 text-amber-600">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400">
               <AlertTriangle className="w-7 h-7" />
-              <h3 className="text-lg font-bold text-slate-900">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                 Preguntas sin responder
               </h3>
             </div>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Has respondido <strong className="text-slate-900">{answeredTotal}</strong> de{' '}
-              <strong className="text-slate-900">{questions.length}</strong> preguntas. Tienes{' '}
-              <strong className="text-rose-600">{questions.length - answeredTotal}</strong> preguntas en blanco que se computarán con 0 puntos.
+            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              Has respondido <strong className="text-slate-900 dark:text-white">{answeredTotal}</strong> de{' '}
+              <strong className="text-slate-900 dark:text-white">{questions.length}</strong> preguntas. Tienes{' '}
+              <strong className="text-rose-600 dark:text-rose-400">{questions.length - answeredTotal}</strong> preguntas en blanco que se computarán con 0 puntos.
             </p>
-            <p className="text-xs text-slate-500">
-              Aún te quedan <strong className="text-slate-800">{formatTimer(timeRemaining)}</strong> para completar el examen.
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Aún te quedan <strong className="text-slate-800 dark:text-slate-200">{formatTimer(timeRemaining)}</strong> para completar el examen.
             </p>
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
               <button
                 onClick={() => setIsSubmitConfirmOpen(false)}
-                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition-colors"
+                className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl text-sm transition-colors"
               >
                 Seguir respondiendo
               </button>
@@ -817,14 +821,14 @@ export default function App() {
       />
 
       {/* Footer Oficial */}
-      <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+      <footer className="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800/80 py-6 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-700">Simulador Examen Teórico Clase B Chile</span>
+            <span className="font-bold text-slate-700 dark:text-slate-300">Simulador Examen Teórico Clase B Chile</span>
             <span>·</span>
             <span>Base Oficial Completa de 280 Preguntas</span>
           </div>
-          <div className="text-slate-400">
+          <div className="text-slate-400 dark:text-slate-500">
             Libro del Nuevo Conductor de CONASET · Ley de Tránsito 18.290 y Ley Tolerancia Cero
           </div>
         </div>

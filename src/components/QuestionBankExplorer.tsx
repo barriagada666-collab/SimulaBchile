@@ -102,36 +102,36 @@ export const QuestionBankExplorer: React.FC<{ onBackToHome: () => void }> = ({ o
   return (
     <div className="w-full space-y-6 animate-fade-in">
       {/* Top Banner & Mastery Progress */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="space-y-1 text-center md:text-left">
-          <div className="flex items-center justify-center md:justify-start gap-2 text-xs font-bold uppercase tracking-wider text-blue-600">
+          <div className="flex items-center justify-center md:justify-start gap-2 text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
             <BookOpen className="w-4 h-4" />
             <span>Banco Oficial CONASET · 280 Preguntas Completas</span>
           </div>
-          <h2 className="text-2xl font-black text-slate-900">
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white">
             Explorador de Preguntas y Respuestas
           </h2>
-          <p className="text-slate-500 text-xs sm:text-sm">
+          <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
             Revisa, practica y domina cada una de las 280 preguntas con su solución oficial y fundamentación jurídica.
           </p>
         </div>
 
         {/* Progress Card */}
-        <div className="w-full md:w-auto bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-4 shrink-0">
+        <div className="w-full md:w-auto bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-4 shrink-0">
           <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-lg shadow-sm">
             {masteredPercentage}%
           </div>
           <div>
-            <div className="text-xs font-bold text-slate-800">
+            <div className="text-xs font-bold text-slate-800 dark:text-white">
               {masteredCount} de {QUESTION_BANK.length} Dominadas
             </div>
-            <div className="w-36 bg-slate-200 h-2 rounded-full overflow-hidden mt-1.5">
+            <div className="w-36 bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden mt-1.5">
               <div
                 className="bg-emerald-500 h-full transition-all duration-300"
                 style={{ width: `${masteredPercentage}%` }}
               />
             </div>
-            <div className="text-[11px] text-slate-500 mt-1">
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
               Progreso guardado localmente
             </div>
           </div>
@@ -139,7 +139,7 @@ export const QuestionBankExplorer: React.FC<{ onBackToHome: () => void }> = ({ o
       </div>
 
       {/* Search & Filters Bar */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-4">
         {/* Search Input */}
         <div className="relative">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -148,12 +148,12 @@ export const QuestionBankExplorer: React.FC<{ onBackToHome: () => void }> = ({ o
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por texto, número de pregunta (ej: '38', 'alcohol', 'velocidad', 'neumáticos')..."
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 text-slate-900 placeholder:text-slate-400"
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
             >
               Borrar
             </button>
@@ -161,13 +161,13 @@ export const QuestionBankExplorer: React.FC<{ onBackToHome: () => void }> = ({ o
         </div>
 
         {/* Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 text-xs">
+        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-xs">
           <button
             onClick={() => setSelectedFilter('all')}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
               selectedFilter === 'all'
                 ? 'bg-blue-600 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             Todas (280)
@@ -177,7 +177,7 @@ export const QuestionBankExplorer: React.FC<{ onBackToHome: () => void }> = ({ o
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors ${
               selectedFilter === 'images'
                 ? 'bg-blue-600 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             <ImageIcon className="w-3.5 h-3.5" />
@@ -188,7 +188,7 @@ export const QuestionBankExplorer: React.FC<{ onBackToHome: () => void }> = ({ o
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-colors ${
               selectedFilter === 'critical'
                 ? 'bg-amber-600 text-white shadow-sm'
-                : 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
+                : 'bg-amber-50 dark:bg-amber-950/50 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/50'
             }`}
           >
             <ShieldAlert className="w-3.5 h-3.5" />
@@ -198,8 +198,8 @@ export const QuestionBankExplorer: React.FC<{ onBackToHome: () => void }> = ({ o
             onClick={() => setSelectedFilter('pending')}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
               selectedFilter === 'pending'
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-sm'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             Por Dominar ({QUESTION_BANK.length - masteredCount})
@@ -209,7 +209,7 @@ export const QuestionBankExplorer: React.FC<{ onBackToHome: () => void }> = ({ o
             className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
               selectedFilter === 'mastered'
                 ? 'bg-emerald-600 text-white shadow-sm'
-                : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+                : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50'
             }`}
           >
             Dominadas ({masteredCount})
@@ -219,21 +219,21 @@ export const QuestionBankExplorer: React.FC<{ onBackToHome: () => void }> = ({ o
 
       {/* Question Cards List */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between text-xs text-slate-500 font-medium px-1">
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium px-1">
           <span>Mostrando {filteredQuestions.length} de {QUESTION_BANK.length} preguntas</span>
           <button
             onClick={onBackToHome}
-            className="text-blue-600 font-bold hover:underline"
+            className="text-blue-600 dark:text-blue-400 font-bold hover:underline"
           >
             ← Volver al Menú Principal
           </button>
         </div>
 
         {filteredQuestions.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center space-y-3">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center space-y-3">
             <BookOpen className="w-8 h-8 text-slate-400 mx-auto" />
-            <h3 className="font-bold text-slate-800">No se encontraron preguntas</h3>
-            <p className="text-xs text-slate-500">
+            <h3 className="font-bold text-slate-800 dark:text-white">No se encontraron preguntas</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Intenta cambiar los términos de búsqueda o limpiar los filtros seleccionados.
             </p>
           </div>
@@ -246,28 +246,30 @@ export const QuestionBankExplorer: React.FC<{ onBackToHome: () => void }> = ({ o
             return (
               <div
                 key={q.id}
-                className={`bg-white border rounded-2xl p-5 sm:p-6 shadow-sm transition-all ${
-                  isMastered ? 'border-emerald-200 bg-emerald-50/10' : 'border-slate-200'
+                className={`bg-white dark:bg-slate-900 border rounded-2xl p-5 sm:p-6 shadow-sm transition-all ${
+                  isMastered
+                    ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/20 dark:bg-emerald-950/20'
+                    : 'border-slate-200 dark:border-slate-800'
                 }`}
               >
                 {/* Header Card */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-100 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-100 dark:border-slate-800 text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="font-black text-slate-900 bg-slate-100 px-2.5 py-1 rounded-md">
+                    <span className="font-black text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md">
                       Pregunta #{q.id}
                     </span>
-                    <span className="text-slate-500 font-medium">
+                    <span className="text-slate-500 dark:text-slate-400 font-medium">
                       {CATEGORY_LABELS[q.category] || q.category}
                     </span>
                     {q.isCritical && (
-                      <span className="text-amber-700 bg-amber-50 border border-amber-200 font-bold px-2 py-0.5 rounded flex items-center gap-1">
-                        <ShieldAlert className="w-3 h-3 text-amber-600" />
+                      <span className="text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                        <ShieldAlert className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                         Crítica (2 Puntos)
                       </span>
                     )}
                     {q.illustrationType && (
-                      <span className="text-blue-700 bg-blue-50 border border-blue-200 font-bold px-2 py-0.5 rounded flex items-center gap-1">
-                        <ImageIcon className="w-3 h-3 text-blue-600" />
+                      <span className="text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                        <ImageIcon className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                         Ilustración
                       </span>
                     )}
@@ -278,11 +280,11 @@ export const QuestionBankExplorer: React.FC<{ onBackToHome: () => void }> = ({ o
                     onClick={() => toggleMastered(q.id)}
                     className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
                       isMastered
-                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                   >
-                    <BookmarkCheck className={`w-3.5 h-3.5 ${isMastered ? 'text-emerald-700' : 'text-slate-400'}`} />
+                    <BookmarkCheck className={`w-3.5 h-3.5 ${isMastered ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400'}`} />
                     <span>{isMastered ? 'Dominada' : 'Marcar Dominada'}</span>
                   </button>
                 </div>
@@ -295,7 +297,7 @@ export const QuestionBankExplorer: React.FC<{ onBackToHome: () => void }> = ({ o
                 )}
 
                 {/* Question Text */}
-                <h3 className="font-bold text-base sm:text-lg text-slate-900 mb-4 leading-snug">
+                <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white mb-4 leading-snug">
                   {q.text}
                 </h3>
 
@@ -305,21 +307,21 @@ export const QuestionBankExplorer: React.FC<{ onBackToHome: () => void }> = ({ o
                     const isSelected = userAns.includes(oIdx);
                     const isCorrect = opt.isCorrect;
 
-                    let optStyle = 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50';
+                    let optStyle = 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60';
                     let markIcon = null;
 
                     if (isRevealed) {
                       if (isCorrect) {
-                        optStyle = 'border-emerald-500 bg-emerald-50/70 text-emerald-950 font-semibold ring-1 ring-emerald-500/20';
-                        markIcon = <Check className="w-4 h-4 text-emerald-600 shrink-0" />;
+                        optStyle = 'border-emerald-500 dark:border-emerald-500 bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200 font-semibold ring-1 ring-emerald-500/20';
+                        markIcon = <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />;
                       } else if (isSelected && !isCorrect) {
-                        optStyle = 'border-rose-300 bg-rose-50/50 text-rose-900';
-                        markIcon = <X className="w-4 h-4 text-rose-500 shrink-0" />;
+                        optStyle = 'border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200';
+                        markIcon = <X className="w-4 h-4 text-rose-500 dark:text-rose-400 shrink-0" />;
                       } else {
-                        optStyle = 'border-slate-200 bg-slate-50/40 text-slate-400';
+                        optStyle = 'border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/40 text-slate-400 dark:text-slate-500';
                       }
                     } else if (isSelected) {
-                      optStyle = 'border-blue-600 bg-blue-50/70 text-blue-950 font-medium ring-1 ring-blue-600/20';
+                      optStyle = 'border-blue-600 dark:border-blue-500 bg-blue-50/70 dark:bg-blue-950/40 text-blue-950 dark:text-blue-200 font-medium ring-1 ring-blue-600/20';
                     }
 
                     return (
@@ -336,14 +338,14 @@ export const QuestionBankExplorer: React.FC<{ onBackToHome: () => void }> = ({ o
                 </div>
 
                 {/* Bottom Actions: Toggle Reveal Official Solution */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100">
-                  <span className="text-xs text-slate-400">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                  <span className="text-xs text-slate-400 dark:text-slate-500">
                     {q.isMultiple ? 'Selección Múltiple (marcar todas las que apliquen)' : 'Selección Única'}
                   </span>
 
                   <button
                     onClick={() => toggleReveal(q.id)}
-                    className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors"
+                    className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-colors"
                   >
                     {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     <span>{isRevealed ? 'Ocultar Solución y Fundamento' : 'Ver Respuesta Oficial y Fundamento Legal'}</span>
@@ -352,15 +354,15 @@ export const QuestionBankExplorer: React.FC<{ onBackToHome: () => void }> = ({ o
 
                 {/* Explanation Box */}
                 {isRevealed && (
-                  <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-700 space-y-2 animate-fade-in">
-                    <div className="flex items-center gap-1.5 font-bold text-slate-900">
-                      <BookOpen className="w-4 h-4 text-blue-600" />
+                  <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm text-slate-700 dark:text-slate-300 space-y-2 animate-fade-in">
+                    <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
+                      <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       <span>Fundamentación Técnica y Legal Oficial CONASET</span>
                     </div>
                     <p className="leading-relaxed">{q.explanation}</p>
                     {q.legalReference && (
-                      <div className="text-xs text-slate-500 font-semibold pt-1 border-t border-slate-200">
-                        Referencia: <span className="text-slate-800">{q.legalReference}</span>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold pt-1 border-t border-slate-200 dark:border-slate-800">
+                        Referencia: <span className="text-slate-800 dark:text-slate-200">{q.legalReference}</span>
                       </div>
                     )}
                   </div>

@@ -146,7 +146,7 @@ export const ProgressHistoryChart: React.FC<ProgressHistoryChartProps> = ({
                   y1={y}
                   x2={width - paddingRight}
                   y2={y}
-                  stroke="#e2e8f0"
+                  className="stroke-slate-200 dark:stroke-slate-800"
                   strokeWidth="1"
                   strokeDasharray="4 4"
                 />
@@ -154,7 +154,7 @@ export const ProgressHistoryChart: React.FC<ProgressHistoryChartProps> = ({
                   x={paddingLeft - 10}
                   y={y + 4}
                   textAnchor="end"
-                  className="text-[11px] fill-slate-400 font-mono font-medium"
+                  className="text-[11px] fill-slate-400 dark:fill-slate-500 font-mono font-medium"
                 >
                   {tickVal}
                   {activeMetric === 'percentage' ? '%' : ''}
@@ -177,7 +177,7 @@ export const ProgressHistoryChart: React.FC<ProgressHistoryChartProps> = ({
             x={width - paddingRight}
             y={thresholdY - 7}
             textAnchor="end"
-            className="text-[11px] fill-emerald-600 font-bold"
+            className="text-[11px] fill-emerald-600 dark:fill-emerald-400 font-bold"
           >
             {metricConfig.thresholdLabel}
           </text>
@@ -220,15 +220,14 @@ export const ProgressHistoryChart: React.FC<ProgressHistoryChartProps> = ({
                   />
                 )}
 
-                {/* Punto exterior blanco */}
+                {/* Punto exterior blanco/oscuro */}
                 <circle
                   cx={p.x}
                   cy={p.y}
                   r={isHovered ? 7 : isCurrent ? 6 : 5}
                   fill={isApproved ? '#10b981' : '#f43f5e'}
-                  stroke="#ffffff"
+                  className="stroke-white dark:stroke-slate-900 transition-all duration-200"
                   strokeWidth={2.5}
-                  className="transition-all duration-200"
                 />
 
                 {/* Etiqueta X debajo del punto */}
@@ -237,7 +236,9 @@ export const ProgressHistoryChart: React.FC<ProgressHistoryChartProps> = ({
                   y={paddingTop + chartHeight + 20}
                   textAnchor="middle"
                   className={`text-[11px] font-semibold ${
-                    isHovered || isCurrent ? 'fill-blue-700 font-bold' : 'fill-slate-500'
+                    isHovered || isCurrent
+                      ? 'fill-blue-700 dark:fill-blue-400 font-bold'
+                      : 'fill-slate-500 dark:fill-slate-400'
                   }`}
                 >
                   {p.item.displayLabel}
