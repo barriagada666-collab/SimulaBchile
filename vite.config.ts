@@ -13,7 +13,6 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
-        'react-is': path.resolve(__dirname, './src/shims/react-is.ts'),
       },
     },
     build: {
@@ -29,17 +28,12 @@ export default defineConfig(() => {
           manualChunks(id) {
             if (
               id.includes('node_modules/react/') ||
-              id.includes('node_modules/react-dom/') ||
-              id.includes('node_modules/react-is/') ||
-              id.includes('src/shims/react-is')
+              id.includes('node_modules/react-dom/')
             ) {
               return 'vendor-react';
             }
             if (id.includes('node_modules/lucide-react/')) {
               return 'vendor-icons';
-            }
-            if (id.includes('node_modules/recharts/')) {
-              return 'vendor-charts';
             }
           },
         },

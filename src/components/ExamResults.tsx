@@ -5,18 +5,9 @@ import {
   Filter, Check, X, TrendingUp, Sparkles, History, Trash2,
   Target, BarChart3
 } from 'lucide-react';
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ReferenceLine,
-} from 'recharts';
 import { Question, UserAnswer, QuestionCategory, TestHistoryItem } from '../types/quiz';
 import { TrafficIllustration } from './TrafficIllustration';
+import { ProgressHistoryChart } from './ProgressHistoryChart';
 
 const STORAGE_KEY_HISTORY = 'conaset_exam_history';
 
@@ -312,7 +303,7 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
           domain: [0, 38] as [number, number],
           threshold: 33,
           thresholdLabel: 'Meta Legal CONASET: 33 pts',
-          dataKey: 'points',
+          dataKey: 'points' as const,
         };
       case 'percentage':
         return {
@@ -321,7 +312,7 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
           domain: [0, 100] as [number, number],
           threshold: 87,
           thresholdLabel: 'Aprobación: 87% (33 pts)',
-          dataKey: 'percentage',
+          dataKey: 'percentage' as const,
         };
       case 'correctAnswers':
         return {
@@ -330,95 +321,10 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
           domain: [0, 35] as [number, number],
           threshold: 30,
           thresholdLabel: 'Meta Sugerida: 30+ aciertos',
-          dataKey: 'correctAnswers',
+          dataKey: 'correctAnswers' as const,
         };
     }
   }, [activeMetric]);
-
-  // Custom Dot para Recharts
-  const renderCustomDot = (props: any) => {
-    const { cx, cy, payload } = props;
-    if (cx == null || cy == null) return null;
-    const itemApproved = payload?.isApproved;
-    const isCurrent = payload?.id === currentExamId;
-    return (
-      <g key={`dot-${payload?.id || cx}-${payload?.attemptNumber}`}>
-        {isCurrent && (
-          <circle
-            cx={cx}
-            cy={cy}
-            r={10}
-            fill="none"
-            stroke={itemApproved ? '#10b981' : '#f43f5e'}
-            strokeWidth={2}
-            opacity={0.5}
-          />
-        )}
-        <circle
-          cx={cx}
-          cy={cy}
-          r={isCurrent ? 6 : 4.5}
-          fill={itemApproved ? '#10b981' : '#f43f5e'}
-          stroke="#ffffff"
-          strokeWidth={2}
-        />
-      </g>
-    );
-  };
-
-  // Custom Tooltip para Recharts
-  const CustomChartTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const item = payload[0].payload;
-      return (
-        <div className="bg-slate-900 text-white p-3.5 rounded-xl shadow-2xl border border-slate-700 text-xs min-w-[210px] z-50">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
-            <span className="font-bold text-slate-100">{item.displayLabel}</span>
-            <span className="text-[10px] text-slate-400 font-mono">{item.date}</span>
-          </div>
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-400">Puntaje Obtenido:</span>
-              <span className="font-bold text-sm text-white">{item.points} / 38 pts</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-400">Porcentaje:</span>
-              <span className="font-semibold text-white">{item.percentage}%</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-400">Aciertos:</span>
-              <span className="text-slate-200">{item.correctAnswers} / 35 preguntas</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-400">Críticas (2 pts):</span>
-              <span className="text-amber-400 font-medium">{item.criticalCorrect} / 3</span>
-            </div>
-            {item.timeSpentSeconds > 0 && (
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Tiempo:</span>
-                <span className="text-slate-300">
-                  {Math.floor(item.timeSpentSeconds / 60)}m {item.timeSpentSeconds % 60}s
-                </span>
-              </div>
-            )}
-          </div>
-          <div className="mt-2.5 pt-2 border-t border-slate-800 flex items-center justify-between">
-            <span className="text-slate-400 text-[11px]">Calificación:</span>
-            <span
-              className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                item.isApproved
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                  : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-              }`}
-            >
-              {item.isApproved ? 'Aprobado (>=33)' : 'Reprobado (<33)'}
-            </span>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
 
   // Filtrado para la revisión detallada
   const filteredQuestions = questions.filter((q) => {
@@ -648,61 +554,14 @@ export const ExamResults: React.FC<ExamResultsProps> = ({
           </div>
         </div>
 
-        {/* Visualización de la Línea Recharts */}
-        <div className="w-full h-72 sm:h-80 pt-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={chartData}
-              margin={{ top: 15, right: 25, left: -10, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-              <XAxis
-                dataKey="displayLabel"
-                stroke="#64748b"
-                fontSize={12}
-                tickLine={false}
-                axisLine={{ stroke: '#cbd5e1' }}
-              />
-              <YAxis
-                domain={metricConfig.domain}
-                stroke="#64748b"
-                fontSize={12}
-                tickLine={false}
-                axisLine={{ stroke: '#cbd5e1' }}
-                unit={activeMetric === 'percentage' ? '%' : ''}
-              />
-              <Tooltip content={<CustomChartTooltip />} />
-              <ReferenceLine
-                y={metricConfig.threshold}
-                stroke="#10b981"
-                strokeDasharray="4 4"
-                strokeWidth={2}
-                label={{
-                  value: metricConfig.thresholdLabel,
-                  fill: '#059669',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  position: 'insideTopRight',
-                  offset: 8,
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey={metricConfig.dataKey}
-                name={metricConfig.title}
-                stroke="#2563eb"
-                strokeWidth={3}
-                dot={renderCustomDot}
-                activeDot={{
-                  r: 8,
-                  fill: '#1d4ed8',
-                  stroke: '#ffffff',
-                  strokeWidth: 3,
-                }}
-                animationDuration={900}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+        {/* Visualización de la Línea de Progreso Nativa */}
+        <div className="w-full pt-2">
+          <ProgressHistoryChart
+            data={chartData}
+            metricConfig={metricConfig}
+            currentExamId={currentExamId}
+            activeMetric={activeMetric}
+          />
         </div>
 
         {/* Leyenda y Acciones de Historial */}
